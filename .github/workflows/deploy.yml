@@ -1,36 +1,48 @@
-name: Deploy to OCI
+name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
-
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Install OCI CLI
+      - name: Inject Firebase config
         run: |
-          python3 -m pip install --upgrade pip
-          pip install oci-cli
+          sed -i \
+            -e "s|__FIREBASE_API_KEY__|${{ secrets.FIREBASE_API_KEY }}|g" \
+            -e "s|__FIREBASE_AUTH_DOMAIN__|${{ secrets.FIREBASE_AUTH_DOMAIN }}|g" \
+            -e "s|__FIREBASE_PROJECT_ID__|${{ secrets.FIREBASE_PROJECT_ID }}|g" \
+            -e "s|__FIREBASE_STORAGE_BUCKET__|${{ secrets.FIREBASE_STORAGE_BUCKET }}|g" \
+            -e "s|__FIREBASE_MESSAGING_SENDER_ID__|${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}|g" \
+            -e "s|__FIREBASE_APP_ID__|${{ secrets.FIREBASE_APP_ID }}|g" \
+            firebase-config.js
 
-      - name: Configure OCI
-        run: |
-          mkdir -p ~/.oci
-          echo "[DEFAULT]" > ~/.oci/config
-          echo "user=${{ secrets.OCI_USER_OCID }}" >> ~/.oci/config
-          echo "fingerprint=${{ secrets.OCI_FINGERPRINT }}" >> ~/.oci/config
-          echo "tenancy=${{ secrets.OCI_TENANCY_OCID }}" >> ~/.oci/config
-          echo "region=${{ secrets.OCI_REGION }}" >> ~/.oci/config
-          echo "${{ secrets.OCI_PRIVATE_KEY }}" > ~/.oci/oci_api_key.pem
-          chmod 600 ~/.oci/oci_api_key.pem
-          echo "key_file=~/.oci/oci_api_key.pem" >> ~/.oci/config
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
 
-      - name: Upload to Bucket
-        run: |
-          oci os object bulk-upload \
-            --bucket-name budget-app \
-            --src-dir . \
-            --overwrite
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

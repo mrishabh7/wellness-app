@@ -1,0 +1,7 @@
+# Streamlit secrets (contains Firebase credentials)
+.streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.pyc
+.venv/

@@ -13,7 +13,8 @@ jobs:
 
       - name: Install OCI CLI
         run: |
-          bash -c "$(curl -L https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh)" --accept-all-defaults
+          python3 -m pip install --upgrade pip
+          pip install oci-cli
 
       - name: Configure OCI
         run: |
@@ -27,7 +28,7 @@ jobs:
           chmod 600 ~/.oci/oci_api_key.pem
           echo "key_file=~/.oci/oci_api_key.pem" >> ~/.oci/config
 
-      - name: Upload files
+      - name: Upload to Bucket
         run: |
           oci os object bulk-upload \
             --bucket-name budget-app \

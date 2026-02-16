@@ -5,3 +5,6 @@
 __pycache__/
 *.pyc
 .venv/
+
+# Local env file (for local dev with real Firebase config)
+.env

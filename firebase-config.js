@@ -1,15 +1,14 @@
 // ===== Firebase Configuration =====
-// Credentials are injected at runtime by Streamlit from secrets.
-// This file is used as a fallback for local development only.
-// For production, the Streamlit wrapper injects the config from st.secrets.
+// Placeholders below are replaced at deploy time by GitHub Actions
+// using repository secrets. Never commit real credentials here.
 
 const firebaseConfig = {
-    apiKey: "",
-    authDomain: "",
-    projectId: "",
-    storageBucket: "",
-    messagingSenderId: "",
-    appId: ""
+    apiKey: "__FIREBASE_API_KEY__",
+    authDomain: "__FIREBASE_AUTH_DOMAIN__",
+    projectId: "__FIREBASE_PROJECT_ID__",
+    storageBucket: "__FIREBASE_STORAGE_BUCKET__",
+    messagingSenderId: "__FIREBASE_MESSAGING_SENDER_ID__",
+    appId: "__FIREBASE_APP_ID__"
 };
 
 // Initialize Firebase
@@ -30,5 +29,7 @@ function initializeFirebase() {
 
 // Check if Firebase is configured (returns true when real config is present)
 function isFirebaseConfigured() {
-    return firebaseConfig.apiKey && firebaseConfig.apiKey.length > 10;
+    return firebaseConfig.apiKey && 
+           firebaseConfig.apiKey.length > 10 && 
+           !firebaseConfig.apiKey.startsWith('__');
 }
